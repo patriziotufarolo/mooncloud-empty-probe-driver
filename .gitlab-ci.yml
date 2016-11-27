@@ -1,4 +1,6 @@
-image: python:2-onbuild
+image: docker:git
+services:
+  - docker:dind
 
 variables:
   CONTAINER_TEST_IMAGE: mooncloud-repository:4567/root/emptyprobe:$CI_BUILD_REF_NAME
