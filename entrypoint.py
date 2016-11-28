@@ -1,15 +1,38 @@
 #!/usr/bin/env python
 import sys
-import six
 import json
-from EmptyDriver import EmptyDriver
+import logging
+from driver import Driver
+
+try:
+    with open('test/metadata.json', 'r') as data_file:
+        data = json.load(data_file)
+except IOError:
+    logging.error("Unable to find 'metadata.json'")
+    sys.exit(-1)
+
+driver_name = data.get("driver-name",None)
+if not driver_name:
+    logging.error("Driver name not specified in 'metadata.json'")
+    sys.exit(-1)
+
+try:
+    Driver.load("test/")
+except ImportError:
+    logging.error("I was unable to find the driver '%s'" % driver_name)
+    sys.exit(-1)
+
+if not len(Driver.registered):
+    logging.error("I was unable to load the driver '%s'" % driver_name)
+    sys.exit(-1)
 
 try:
     testcase = json.load(sys.stdin)
 except ValueError:
-    print("Invalid JSON provided in STDIN")
+    logging.error("Invalid JSON provided in STDIN")
     sys.exit(-1)
 
-this_driver = EmptyDriver(testcase)
-this_driver.appendAtomics()
-print(this_driver.run())
+this_driver = [x for x in Driver.registered if x.__name__ == driver_name][0]
+this_driver_instance = this_driver(testcase)
+this_driver_instance.appendAtomics()
+print(this_driver_instance.run())

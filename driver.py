@@ -1,5 +1,8 @@
 import six
 import traceback
+import imp
+import logging
+import pkgutil
 
 class AtomicOperation(object):
     action = None
@@ -9,6 +12,27 @@ class AtomicOperation(object):
         self.rollback = rollback
 
 class Driver(object):
+    class __metaclass__(type):
+        def __init__(cls, name, base, attrs):
+            if not hasattr(cls, 'registered'):
+                cls.registered = []
+            else:
+                cls.registered.append(cls)
+
+    @classmethod
+    def load(cls, *paths):
+        paths = list(paths)
+        cls.registered = []
+        for _, name, _ in pkgutil.iter_modules(paths):
+            fid, pathname, desc = imp.find_module(name, paths)
+            try:
+                imp.load_module(name, fid, pathname, desc)
+            except Exception as e:
+                logging.warning("could not load the driver '%s':%s", pathname, e.message)
+            if fid:
+                fid.close()
+
+
     def __init__(self, testinstances):
         self.testinstances = testinstances
         self.atomic_operations = []
