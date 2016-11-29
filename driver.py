@@ -4,12 +4,15 @@ import imp
 import logging
 import pkgutil
 
+
 class AtomicOperation(object):
     action = None
     rollback = None
+
     def __init__(self, action, rollback):
         self.action = action
         self.rollback = rollback
+
 
 class Driver(object):
     class __metaclass__(type):
@@ -28,10 +31,10 @@ class Driver(object):
             try:
                 imp.load_module(name, fid, pathname, desc)
             except Exception as e:
-                logging.warning("could not load the driver '%s':%s", pathname, e.message)
+                logging.warning("could not load \
+                                the driver '%s':%s", pathname, e.message)
             if fid:
                 fid.close()
-
 
     def __init__(self, testinstances):
         self.testinstances = testinstances
@@ -47,26 +50,28 @@ class Driver(object):
         prev_out = None
         ctr = 0
         try:
-            total_operations = len(self.atomic_operations)
             for operation in self.atomic_operations:
                 out = operation.action(prev_out)
                 prev_out = out
                 ctr += 1
-            print("Test execution finished")
+            logging.info("Test execution finished")
             final_result = prev_out
-        except Exception as e:
-            print("Phase {} returned an exception. Reverting operations. Stepping back to {}".format(str(ctr), str(ctr-1)))
-            print("Exception:")
-            print(traceback.format_exc())
+        except Exception:
+            logging.error("Phase {} returned an exception.\
+                          Reverting operations. Stepping back to {}"
+                          .format(str(ctr), str(ctr-1)))
+            logging.error("Exception:")
+            logging.error(traceback.format_exc())
             ctr -= 1
             try:
                 rollback_prev_out = prev_out
                 for rollback in six.range(ctr, -1, -1):
-                    rollback_prev_out = self.atomic_operations(ctr).rollback()
+                    rollback_prev_out = self.atomic_operations(ctr).\
+                        rollback(rollback_prev_out)
                     ctr -= 1
-            except Exception as e:
-                print("Exception during rollback at phase {}").format(str(ctr))
-                print(traceback.format_exc())
+            except Exception:
+                logging.critical("Exception during rollback \
+                                 at phase {}").format(str(ctr))
+                logging.critical(traceback.format_exc())
             final_result = 'error'
         return final_result
-
