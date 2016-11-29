@@ -3,6 +3,7 @@ import traceback
 import imp
 import logging
 import pkgutil
+import json
 
 
 class AtomicOperation(object):
@@ -12,6 +13,14 @@ class AtomicOperation(object):
     def __init__(self, action, rollback):
         self.action = action
         self.rollback = rollback
+
+
+class DriverResult(object):
+    result = None
+    data = {}
+
+    def __repr__(self):
+        return json.dumps(self.__dict__)
 
 
 class Driver(object):
@@ -39,6 +48,7 @@ class Driver(object):
     def __init__(self, testinstances):
         self.testinstances = testinstances
         self.atomic_operations = []
+        self.result = DriverResult()
 
     def appendAtomic(self, action, rollback):
         self.atomic_operations.append(AtomicOperation(action, rollback))
@@ -55,7 +65,7 @@ class Driver(object):
                 prev_out = out
                 ctr += 1
             logging.info("Test execution finished")
-            final_result = prev_out
+            self.result.result = prev_out
         except Exception:
             logging.error("Phase {} returned an exception.\
                           Reverting operations. Stepping back to {}"
@@ -73,5 +83,5 @@ class Driver(object):
                 logging.critical("Exception during rollback \
                                  at phase {}").format(str(ctr))
                 logging.critical(traceback.format_exc())
-            final_result = 'error'
-        return final_result
+            self.result.result = "ERROR"
+        return self.result
