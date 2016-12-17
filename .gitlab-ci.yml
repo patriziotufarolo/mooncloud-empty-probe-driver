@@ -1,7 +1,7 @@
 
 variables:
-  CONTAINER_TEST_IMAGE: mooncloud-repository:4567/root/emptyprobe:$CI_BUILD_REF_NAME
-  CONTAINER_RELEASE_IMAGE: mooncloud-repository:4567/root/emptyprobe:latest
+  CONTAINER_TEST_IMAGE: repository.internal.moon-cloud.eu:4567/root/emptyprobe:$CI_BUILD_REF_NAME
+  CONTAINER_RELEASE_IMAGE: repository.internal.moon-cloud.eu:4567/root/emptyprobe:latest
 
 stages:
   - build
@@ -9,7 +9,7 @@ stages:
   - release
 
 before_script:
-  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN mooncloud-repository:4567
+  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN repository.internal.moon-cloud.eu:4567
 build:
   stage: build
   script:
