@@ -1,7 +1,7 @@
 
 variables:
-  CONTAINER_TEST_IMAGE: repository.internal.moon-cloud.eu:4567/root/emptyprobe:$CI_BUILD_REF_NAME
-  CONTAINER_RELEASE_IMAGE: repository.internal.moon-cloud.eu:4567/root/emptyprobe:latest
+  CONTAINER_TEST_IMAGE: repository.internal.moon-cloud.eu:4567/probes/emptyprobe:$CI_BUILD_REF_NAME
+  CONTAINER_RELEASE_IMAGE: repository.internal.moon-cloud.eu:4567/probes/emptyprobe:latest
 
 stages:
   - build
