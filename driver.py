@@ -75,13 +75,13 @@ class Driver(object):
             ctr -= 1
             try:
                 rollback_prev_out = prev_out
-                for rollback in six.range(ctr, -1, -1):
+                for rollback in six.moves.range(ctr, -1, -1):
                     rollback_prev_out = self.atomic_operations(ctr).\
                         rollback(rollback_prev_out)
                     ctr -= 1
             except Exception:
                 logging.critical("Exception during rollback \
-                                 at phase {}").format(str(ctr))
+                                 at phase {}".format(str(ctr)))
                 logging.critical(traceback.format_exc())
             self.result.result = "ERROR"
         return self.result
